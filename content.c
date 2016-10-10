@@ -33,7 +33,7 @@
 #include <unistd.h>
 
 /* 10 MB is max size */
-#define MAX_CONTENT_SZ (1024*1024*10)
+#define MAX_CONTENT_SZ (1024*1024*1024)
 
 char *
 error_resp(char *path, int *len)
@@ -62,13 +62,16 @@ content_get(char *path, int *content_len)
 #ifdef THINK_TIME
 	sleep(1);
 #endif
-
+	
 	/* Bad path?  No file?  Too large? */
-	if (sanity_check(path) ||
-	    stat(path, &s)     ||
-	    s.st_size > MAX_CONTENT_SZ) goto err;
-
+	if (stat(path, &s))
+	{
+		path = "404.html";
+	}
+	stat(path, &s);
+	if (sanity_check(path) || s.st_size > MAX_CONTENT_SZ) goto err;
 	content_fd = open(path, O_RDONLY);
+	
 	if (content_fd < 0) goto err;
 
 	resp = malloc(s.st_size);
